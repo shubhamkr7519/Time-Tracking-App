@@ -1,0 +1,467 @@
+/* src/pages/AdminDashboard/AdminDashboard.css (Final Complete Version) */
+.admin-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-content h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.header-content p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.dashboard-content {
+  display: grid;
+  gap: 32px;
+}
+
+.section-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.section-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.section-card > p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+}
+
+/* Form styling for consistent button sizes */
+.create-form {
+  max-width: 500px;
+  margin-bottom: 32px;
+  padding: 24px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.invite-form {
+  max-width: 500px;
+  padding: 24px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Assignment form styling */
+.assignment-form {
+  background-color: #f9fafb;
+  padding: 24px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.assignment-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+/* Task Management and Assignment Container */
+.task-assignment-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.task-management {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 24px;
+}
+
+.task-assignment {
+  padding-left: 24px;
+}
+
+/* Assigned Tasks Section */
+.assigned-tasks-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.assigned-tasks-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  margin-top: 16px;
+}
+
+.assigned-tasks-table .table-header,
+.assigned-tasks-table .table-row {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 2fr 100px;
+}
+
+.assigned-employees {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.employee-tag {
+  display: inline-block;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Ensure uniform button sizes */
+.btn {
+  min-height: 42px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Size variants */
+.btn--small {
+  min-height: 36px;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.btn--large {
+  min-height: 48px;
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+/* Loading and No Items States */
+.loading-state {
+  text-align: center;
+  padding: 40px 0;
+  color: #6b7280;
+}
+
+.no-items {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  padding: 40px 0;
+}
+
+/* Table Styles */
+.employees-table,
+.invitations-table,
+.projects-table,
+.tasks-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.table-header {
+  display: grid;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-row {
+  display: grid;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background-color: #f9fafb;
+}
+
+.table-cell {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.table-header .table-cell {
+  font-weight: 600;
+  color: #374151;
+  background-color: #f9fafb;
+}
+
+.table-row .table-cell {
+  color: #6b7280;
+}
+
+.table-cell strong {
+  color: #111827;
+}
+
+/* Specific table grid layouts */
+.employees-table .table-header,
+.employees-table .table-row {
+  grid-template-columns: 1fr 1fr 120px 120px 120px;
+}
+
+.invitations-table .table-header,
+.invitations-table .table-row {
+  grid-template-columns: 2fr 150px 180px 200px;
+}
+
+.projects-table .table-header,
+.projects-table .table-row {
+  grid-template-columns: 3fr 1fr 1fr 100px;
+}
+
+.tasks-table .table-header,
+.tasks-table .table-row {
+  grid-template-columns: 3fr 1.5fr 100px 100px 100px;
+}
+
+/* Action buttons in tables */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status Styles */
+.status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status--invited,
+.status--pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status--active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status--deactivated {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Priority Styles */
+.priority {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.priority--low {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.priority--medium {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.priority--high {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Instructions */
+.instructions-content h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 24px 0 12px 0;
+}
+
+.instructions-content h3:first-child {
+  margin-top: 16px;
+}
+
+.instructions-list {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.instructions-list li {
+  margin-bottom: 8px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Employee Items */
+.employees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.employee-item {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+}
+
+.employee-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.employee-info strong {
+  color: #111827;
+}
+
+.employee-timestamp {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .task-assignment-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .task-management {
+    border-right: none;
+    padding-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 24px;
+  }
+  
+  .task-assignment {
+    padding-left: 0;
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .assignment-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .create-form,
+  .invite-form,
+  .assignment-form {
+    padding: 16px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-header,
+  .table-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  
+  .table-cell {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .table-header .table-cell {
+    display: none;
+  }
+  
+  .table-cell:before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #374151;
+    margin-right: 8px;
+  }
+  
+  .action-buttons {
+    justify-content: flex-start;
+  }
+  
+  .action-buttons .btn {
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .assigned-employees {
+    gap: 2px;
+  }
+  
+  .employee-tag {
+    font-size: 11px;
+    padding: 1px 6px;
+  }
+}

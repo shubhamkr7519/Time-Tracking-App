@@ -1,0 +1,61 @@
+/* src/components/common/Layout/Layout.css */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout--centered {
+  justify-content: center;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.layout__header {
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 0;
+}
+
+.header__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__logo {
+  width: 32px;
+  height: 32px;
+}
+
+.header__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.layout__main {
+  flex: 1;
+  padding: 40px 0;
+}
+
+.layout__main--centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.layout__footer {
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}

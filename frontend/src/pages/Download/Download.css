@@ -1,0 +1,177 @@
+/* src/pages/Download/Download.css */
+.download-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.download-hero {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.download-hero h1 {
+  font-size: 36px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.download-hero p {
+  font-size: 18px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.download-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.download-info h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.download-info p {
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  color: #374151;
+  margin-bottom: 8px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.feature-list li:before {
+  content: "✓";
+  color: #10b981;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.system-info {
+  background-color: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.system-info strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.system-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.system-info li {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  padding-left: 16px;
+  position: relative;
+}
+
+.system-info li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #9ca3af;
+}
+
+.download-note {
+  text-align: center;
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 16px;
+}
+
+.help-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.help-section h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.help-section p {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.help-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.help-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.help-link:hover {
+  text-decoration: underline;
+}
+
+.account-actions {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .download-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .help-links {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+/* Add this to src/pages/Download/Download.css */
+.help-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.help-link:hover {
+  text-decoration: underline;
+}
+
