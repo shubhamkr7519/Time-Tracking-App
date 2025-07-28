@@ -13,11 +13,31 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Add CORS before other middleware
-app.use(cors({
-  origin: 'http://localhost:3000', // React app URL
+// Dynamic CORS based on environment
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001', 
+      process.env.FRONTEND_URL  // This should be your Vercel URL
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+
 
 app.use(express.json());
 
