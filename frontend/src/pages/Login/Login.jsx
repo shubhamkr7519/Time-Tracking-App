@@ -1,11 +1,11 @@
-// src/pages/Login/Login.jsx (Complete component with all imports)
+// src/pages/Login/Login.jsx
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../../components/common/Layout/Layout';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext'; // Updated import path
 import toast from 'react-hot-toast';
 import './Login.css';
 

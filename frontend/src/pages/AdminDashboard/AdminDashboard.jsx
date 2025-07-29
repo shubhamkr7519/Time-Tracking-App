@@ -1,18 +1,17 @@
-// src/pages/AdminDashboard/AdminDashboard.jsx (Complete with modifications)
+// src/pages/AdminDashboard/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/common/Layout/Layout';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
-import { useAuth } from '../../hooks/useAuth';
-import { useApi } from '../../hooks/useApi';
+import { useAuth } from '../../context/AuthContext'; // Updated import path
+import api from '../../services/api'; // Use centralized API
 import toast from 'react-hot-toast';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  const { loading, execute } = useApi();
   const navigate = useNavigate();
   
   // Form hooks for different sections
@@ -27,7 +26,7 @@ const AdminDashboard = () => {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   
-  // Assignment state - single unified assignment
+  // Assignment state
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedTask, setSelectedTask] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -38,6 +37,7 @@ const AdminDashboard = () => {
   const [loadingInvitations, setLoadingInvitations] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     loadEmployees();
@@ -46,88 +46,68 @@ const AdminDashboard = () => {
     loadTasks();
   }, []);
 
-  // Helper function for authenticated requests
-  const authFetch = async (url, options = {}) => {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Request failed');
-    }
-    
-    return response.json();
-  };
-
   // ===== EMPLOYEE MANAGEMENT FUNCTIONS =====
   const loadEmployees = async () => {
     setLoadingEmployees(true);
-    const result = await execute(() => authFetch('http://localhost:5000/api/v1/employee'));
-    if (result.success) {
-      setAllEmployees(result.data || []);
-    } else {
-      toast.error('Failed to load employees: ' + result.error);
+    try {
+      const response = await api.get('/employee');
+      setAllEmployees(response.data || []);
+    } catch (error) {
+      toast.error('Failed to load employees: ' + error.message);
+      console.error('Load employees error:', error);
+    } finally {
+      setLoadingEmployees(false);
     }
-    setLoadingEmployees(false);
   };
 
   const loadPendingInvitations = async () => {
     setLoadingInvitations(true);
-    const result = await execute(() => authFetch('http://localhost:5000/api/v1/auth/pending-invitations'));
-    if (result.success) {
-      setPendingInvitations(result.data || []);
-    } else {
-      toast.error('Failed to load pending invitations: ' + result.error);
+    try {
+      const response = await api.get('/auth/pending-invitations');
+      setPendingInvitations(response.data || []);
+    } catch (error) {
+      toast.error('Failed to load pending invitations: ' + error.message);
+      console.error('Load invitations error:', error);
+    } finally {
+      setLoadingInvitations(false);
     }
-    setLoadingInvitations(false);
   };
 
   const onInviteEmployee = async (data) => {
-    const result = await execute(() => 
-      authFetch('http://localhost:5000/api/v1/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: data.email,
-          password: 'TempPassword123!',
-          role: 'employee'
-        })
-      })
-    );
+    setActionLoading(true);
+    try {
+      const response = await api.post('/auth/register', {
+        email: data.email,
+        password: 'TempPassword123!',
+        role: 'employee'
+      });
 
-    if (result.success) {
       toast.success(`Employee invitation sent to ${data.email}!`);
       setInvitedEmployees(prev => [...prev, { 
         email: data.email, 
         status: 'invited', 
         timestamp: new Date(),
-        userId: result.data?.id
+        userId: response.data?.id
       }]);
       resetEmployee();
       toast.success('Check employee email for verification link!', { duration: 6000 });
-      loadEmployees();
-      loadPendingInvitations();
-    } else {
-      toast.error(result.error);
+      
+      // Refresh data
+      await Promise.all([loadEmployees(), loadPendingInvitations()]);
+    } catch (error) {
+      toast.error(error.message || 'Failed to send invitation');
+      console.error('Invite employee error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const onResendInvitation = async (email, userId) => {
-    const result = await execute(() => 
-      authFetch('http://localhost:5000/api/v1/auth/resend-invitation', {
-        method: 'POST',
-        body: JSON.stringify({ userId, email })
-      })
-    );
-
-    if (result.success) {
+    setActionLoading(true);
+    try {
+      await api.post('/auth/resend-invitation', { userId, email });
       toast.success(`Invitation resent to ${email}!`);
+      
       setPendingInvitations(prev => 
         prev.map(inv => 
           inv.email === email 
@@ -135,8 +115,11 @@ const AdminDashboard = () => {
             : inv
         )
       );
-    } else {
-      toast.error('Failed to resend invitation: ' + result.error);
+    } catch (error) {
+      toast.error('Failed to resend invitation: ' + error.message);
+      console.error('Resend invitation error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -145,19 +128,20 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch(`http://localhost:5000/api/v1/auth/delete-invitation/${userId}`, {
-        method: 'DELETE'
-      })
-    );
-
-    if (result.success) {
+    setActionLoading(true);
+    try {
+      await api.delete(`/auth/delete-invitation/${userId}`);
       toast.success(`Invitation for ${email} deleted successfully`);
+      
       setPendingInvitations(prev => prev.filter(inv => inv.email !== email));
       setInvitedEmployees(prev => prev.filter(inv => inv.email !== email));
-      loadEmployees();
-    } else {
-      toast.error('Failed to delete invitation: ' + result.error);
+      
+      await loadEmployees();
+    } catch (error) {
+      toast.error('Failed to delete invitation: ' + error.message);
+      console.error('Delete invitation error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -166,47 +150,49 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch(`http://localhost:5000/api/v1/employee/deactivate/${employeeId}`)
-    );
-
-    if (result.success) {
+    setActionLoading(true);
+    try {
+      await api.get(`/employee/deactivate/${employeeId}`);
       toast.success(`Employee ${employeeName} has been deactivated`);
-      loadEmployees();
-    } else {
-      toast.error('Failed to deactivate employee: ' + result.error);
+      await loadEmployees();
+    } catch (error) {
+      toast.error('Failed to deactivate employee: ' + error.message);
+      console.error('Deactivate employee error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // ===== PROJECT MANAGEMENT FUNCTIONS =====
   const loadProjects = async () => {
     setLoadingProjects(true);
-    const result = await execute(() => authFetch('http://localhost:5000/api/v1/project'));
-    if (result.success) {
-      setProjects(result.data || []);
-    } else {
-      toast.error('Failed to load projects: ' + result.error);
+    try {
+      const response = await api.get('/project');
+      setProjects(response.data || []);
+    } catch (error) {
+      toast.error('Failed to load projects: ' + error.message);
+      console.error('Load projects error:', error);
+    } finally {
+      setLoadingProjects(false);
     }
-    setLoadingProjects(false);
   };
 
   const onCreateProject = async (data) => {
-    const result = await execute(() => 
-      authFetch('http://localhost:5000/api/v1/project', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: data.projectName,
-          teamId: 'w7268578db3d0bc'
-        })
-      })
-    );
+    setActionLoading(true);
+    try {
+      await api.post('/project', {
+        name: data.projectName,
+        teamId: 'w7268578db3d0bc'
+      });
 
-    if (result.success) {
       toast.success(`Project "${data.projectName}" created successfully!`);
       resetProject();
-      loadProjects();
-    } else {
-      toast.error('Failed to create project: ' + result.error);
+      await loadProjects();
+    } catch (error) {
+      toast.error('Failed to create project: ' + error.message);
+      console.error('Create project error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -215,17 +201,12 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch(`http://localhost:5000/api/v1/project/${projectId}`, {
-        method: 'DELETE'
-      })
-    );
-
-    if (result.success) {
+    setActionLoading(true);
+    try {
+      await api.delete(`/project/${projectId}`);
       toast.success(`Project "${projectName}" deleted successfully!`);
-      loadProjects();
-      loadTasks(); // Refresh tasks as associated tasks are deleted
-      // Reset selection if deleted project was selected
+      
+      // Reset selections if deleted project was selected
       if (selectedProject === projectId) {
         setSelectedProject('');
         setSelectedTask('');
@@ -233,21 +214,28 @@ const AdminDashboard = () => {
       if (selectedProjectForTask === projectId) {
         setSelectedProjectForTask('');
       }
-    } else {
-      toast.error('Failed to delete project: ' + result.error);
+      
+      await Promise.all([loadProjects(), loadTasks()]);
+    } catch (error) {
+      toast.error('Failed to delete project: ' + error.message);
+      console.error('Delete project error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // ===== TASK MANAGEMENT FUNCTIONS =====
   const loadTasks = async () => {
     setLoadingTasks(true);
-    const result = await execute(() => authFetch('http://localhost:5000/api/v1/task'));
-    if (result.success) {
-      setTasks(result.data || []);
-    } else {
-      toast.error('Failed to load tasks: ' + result.error);
+    try {
+      const response = await api.get('/task');
+      setTasks(response.data || []);
+    } catch (error) {
+      toast.error('Failed to load tasks: ' + error.message);
+      console.error('Load tasks error:', error);
+    } finally {
+      setLoadingTasks(false);
     }
-    setLoadingTasks(false);
   };
 
   const onCreateTask = async (data) => {
@@ -256,24 +244,23 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch('http://localhost:5000/api/v1/task', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: data.taskName,
-          projectId: selectedProjectForTask,
-          priority: data.taskPriority || 'medium'
-        })
-      })
-    );
+    setActionLoading(true);
+    try {
+      await api.post('/task', {
+        name: data.taskName,
+        projectId: selectedProjectForTask,
+        priority: data.taskPriority || 'medium'
+      });
 
-    if (result.success) {
       toast.success(`Task "${data.taskName}" created successfully!`);
       resetTask();
       setSelectedProjectForTask('');
-      loadTasks();
-    } else {
-      toast.error('Failed to create task: ' + result.error);
+      await loadTasks();
+    } catch (error) {
+      toast.error('Failed to create task: ' + error.message);
+      console.error('Create task error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -282,21 +269,22 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch(`http://localhost:5000/api/v1/task/${taskId}`, {
-        method: 'DELETE'
-      })
-    );
-
-    if (result.success) {
+    setActionLoading(true);
+    try {
+      await api.delete(`/task/${taskId}`);
       toast.success(`Task "${taskName}" deleted successfully!`);
-      loadTasks();
+      
       // Reset selection if deleted task was selected
       if (selectedTask === taskId) {
         setSelectedTask('');
       }
-    } else {
-      toast.error('Failed to delete task: ' + result.error);
+      
+      await loadTasks();
+    } catch (error) {
+      toast.error('Failed to delete task: ' + error.message);
+      console.error('Delete task error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -307,16 +295,12 @@ const AdminDashboard = () => {
       return;
     }
 
-    const result = await execute(() => 
-      authFetch(`http://localhost:5000/api/v1/task/assign-employee/${selectedTask}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          employeeId: selectedEmployee
-        })
-      })
-    );
+    setActionLoading(true);
+    try {
+      await api.put(`/task/assign-employee/${selectedTask}`, {
+        employeeId: selectedEmployee
+      });
 
-    if (result.success) {
       const employee = allEmployees.find(emp => emp.id === selectedEmployee);
       const task = tasks.find(t => t.id === selectedTask);
       toast.success(`Task "${task?.name}" assigned to ${employee?.name}!`);
@@ -326,9 +310,12 @@ const AdminDashboard = () => {
       setSelectedTask('');
       setSelectedEmployee('');
       
-      loadTasks();
-    } else {
-      toast.error('Failed to assign task: ' + result.error);
+      await loadTasks();
+    } catch (error) {
+      toast.error('Failed to assign task: ' + error.message);
+      console.error('Assign task error:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -339,7 +326,6 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   return (
@@ -367,6 +353,7 @@ const AdminDashboard = () => {
                 type="email"
                 placeholder="employee@company.com"
                 required
+                disabled={actionLoading}
                 error={employeeErrors.email?.message}
                 {...registerEmployee('email', {
                   required: 'Email is required',
@@ -379,7 +366,8 @@ const AdminDashboard = () => {
               
               <Button
                 type="submit"
-                loading={loading}
+                loading={actionLoading}
+                disabled={actionLoading}
               >
                 Send Invitation
               </Button>
@@ -395,6 +383,7 @@ const AdminDashboard = () => {
                 size="small" 
                 onClick={loadPendingInvitations}
                 loading={loadingInvitations}
+                disabled={actionLoading}
               >
                 Refresh
               </Button>
@@ -433,6 +422,7 @@ const AdminDashboard = () => {
                           variant="secondary"
                           size="small"
                           onClick={() => onResendInvitation(invitation.email, invitation.userId)}
+                          disabled={actionLoading}
                         >
                           Resend
                         </Button>
@@ -440,6 +430,7 @@ const AdminDashboard = () => {
                           variant="secondary"
                           size="small"
                           onClick={() => onDeleteInvitation(invitation.email, invitation.userId)}
+                          disabled={actionLoading}
                           style={{ color: '#ef4444', marginLeft: '8px' }}
                         >
                           Delete
@@ -467,6 +458,7 @@ const AdminDashboard = () => {
                           variant="secondary"
                           size="small"
                           onClick={() => onResendInvitation(invitation.email, invitation.id)}
+                          disabled={actionLoading}
                         >
                           Resend
                         </Button>
@@ -474,6 +466,7 @@ const AdminDashboard = () => {
                           variant="secondary"
                           size="small"
                           onClick={() => onDeleteInvitation(invitation.email, invitation.id)}
+                          disabled={actionLoading}
                           style={{ color: '#ef4444', marginLeft: '8px' }}
                         >
                           Delete
@@ -495,6 +488,7 @@ const AdminDashboard = () => {
                 size="small" 
                 onClick={loadProjects}
                 loading={loadingProjects}
+                disabled={actionLoading}
               >
                 Refresh
               </Button>
@@ -507,6 +501,7 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Enter project name"
                 required
+                disabled={actionLoading}
                 error={projectErrors.projectName?.message}
                 {...registerProject('projectName', {
                   required: 'Project name is required',
@@ -519,7 +514,8 @@ const AdminDashboard = () => {
               
               <Button
                 type="submit"
-                loading={loading}
+                loading={actionLoading}
+                disabled={actionLoading}
               >
                 Create Project
               </Button>
@@ -556,6 +552,7 @@ const AdminDashboard = () => {
                         variant="secondary"
                         size="small"
                         onClick={() => onDeleteProject(project.id, project.name)}
+                        disabled={actionLoading}
                         style={{ color: '#ef4444' }}
                       >
                         Delete
@@ -576,6 +573,7 @@ const AdminDashboard = () => {
                 size="small" 
                 onClick={loadTasks}
                 loading={loadingTasks}
+                disabled={actionLoading}
               >
                 Refresh
               </Button>
@@ -590,6 +588,7 @@ const AdminDashboard = () => {
                   onChange={(e) => setSelectedProjectForTask(e.target.value)}
                   className="input"
                   required
+                  disabled={actionLoading}
                 >
                   <option value="">Select a project</option>
                   {projects.map(project => (
@@ -605,6 +604,7 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Enter task name"
                 required
+                disabled={actionLoading}
                 error={taskErrors.taskName?.message}
                 {...registerTask('taskName', {
                   required: 'Task name is required',
@@ -621,6 +621,7 @@ const AdminDashboard = () => {
                   {...registerTask('taskPriority')}
                   className="input"
                   defaultValue="medium"
+                  disabled={actionLoading}
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -630,8 +631,8 @@ const AdminDashboard = () => {
               
               <Button
                 type="submit"
-                loading={loading}
-                disabled={!selectedProjectForTask}
+                loading={actionLoading}
+                disabled={!selectedProjectForTask || actionLoading}
               >
                 Create Task
               </Button>
@@ -676,6 +677,7 @@ const AdminDashboard = () => {
                         variant="secondary"
                         size="small"
                         onClick={() => onDeleteTask(task.id, task.name)}
+                        disabled={actionLoading}
                         style={{ color: '#ef4444' }}
                       >
                         Delete
@@ -704,6 +706,7 @@ const AdminDashboard = () => {
                     }}
                     className="input"
                     required
+                    disabled={actionLoading}
                   >
                     <option value="">Select project</option>
                     {projects.map(project => (
@@ -721,7 +724,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setSelectedTask(e.target.value)}
                     className="input"
                     required
-                    disabled={!selectedProject}
+                    disabled={!selectedProject || actionLoading}
                   >
                     <option value="">Select task</option>
                     {getTasksForProject().map(task => (
@@ -739,6 +742,7 @@ const AdminDashboard = () => {
                     onChange={(e) => setSelectedEmployee(e.target.value)}
                     className="input"
                     required
+                    disabled={actionLoading}
                   >
                     <option value="">Select employee</option>
                     {allEmployees.filter(emp => !emp.deactivated).map(employee => (
@@ -752,8 +756,8 @@ const AdminDashboard = () => {
                 <div className="form-group">
                   <Button
                     onClick={onAssignTask}
-                    disabled={!selectedProject || !selectedTask || !selectedEmployee}
-                    loading={loading}
+                    disabled={!selectedProject || !selectedTask || !selectedEmployee || actionLoading}
+                    loading={actionLoading}
                   >
                     Assign Task
                   </Button>
@@ -771,6 +775,7 @@ const AdminDashboard = () => {
                 size="small" 
                 onClick={loadEmployees}
                 loading={loadingEmployees}
+                disabled={actionLoading}
               >
                 Refresh
               </Button>
@@ -813,6 +818,7 @@ const AdminDashboard = () => {
                           variant="secondary"
                           size="small"
                           onClick={() => onRemoveEmployee(employee.id, employee.name || employee.identifier)}
+                          disabled={actionLoading}
                           style={{ color: '#ef4444' }}
                         >
                           Deactivate

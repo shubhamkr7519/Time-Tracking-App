@@ -1,110 +1,103 @@
-// src/models/User.js
-const { Schema, model } = require('mongoose');
+// backend/src/models/User.js
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const userSchema = new Schema({
-  // User identifier
+const userSchema = new mongoose.Schema({
   id: {
     type: String,
     required: true,
     unique: true
   },
-  
-  // Email for login
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true
   },
-  
-  // Hashed password
   password: {
     type: String,
-    required: true
+    required: true,
+    select: false // Don't include password in queries by default
   },
-  
-  // User role
   role: {
     type: String,
     enum: ['admin', 'employee'],
     required: true
   },
-  
-  // Organization the user belongs to
   organizationId: {
     type: String,
     required: true
   },
-  
-  // Employee ID if user is an employee
   employeeId: {
     type: String,
-    required: false
+    default: null
   },
-  
-  // Email verification
+  emailVerificationToken: {
+    type: String,
+    default: null
+  },
   emailVerified: {
     type: Boolean,
     default: false
   },
-  
-  // Email verification token
-  emailVerificationToken: {
-    type: String,
-    required: false
-  },
-  
-  // Password reset token
   passwordResetToken: {
     type: String,
-    required: false
+    default: null
   },
-  
-  // Password reset expiry
   passwordResetExpiry: {
     type: Date,
-    required: false
+    default: null
   },
-  
-  // Account status
   active: {
     type: Boolean,
     default: true
   },
-  
-  // Creation timestamp
+  lastLogin: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Number,
-    required: true,
     default: Date.now
-  },
-  
-  // Last login
-  lastLogin: {
-    type: Number,
-    required: false
   }
-}, {
-  timestamps: false
 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
   
   try {
-    const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
+    console.log('Hashing password for user:', this.email);
+    // Hash password with cost of 12
+    this.password = await bcrypt.hash(this.password, 12);
+    console.log('Password hashed successfully');
     next();
   } catch (error) {
+    console.error('Password hashing error:', error);
     next(error);
   }
 });
 
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+  try {
+    console.log('Comparing password for user:', this.email);
+    console.log('Candidate password provided:', !!candidatePassword);
+    console.log('Stored password hash exists:', !!this.password);
+    
+    if (!candidatePassword || !this.password) {
+      console.log('Missing password or hash');
+      return false;
+    }
+    
+    const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    console.log('Password comparison result:', isMatch);
+    return isMatch;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 };
 
-module.exports = model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);

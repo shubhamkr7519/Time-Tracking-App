@@ -1,8 +1,8 @@
-// src/pages/Download/Download.jsx (Updated to fix warnings)
-import React, { useState } from 'react'; // Removed unused useEffect
+// src/pages/Download/Download.jsx
+import React, { useState } from 'react';
 import Layout from '../../components/common/Layout/Layout';
 import Button from '../../components/common/Button/Button';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext'; // Updated import path
 import './Download.css';
 
 const Download = () => {
