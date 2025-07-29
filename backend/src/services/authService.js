@@ -89,7 +89,9 @@ class AuthService {
   // Login user
   async loginUser(email, password) {
     // Find user by email
+    console.log('Current database:', mongoose.connection.db.databaseName);
     const user = await User.findOne({ email }).select('+password');
+    console.log('User found:', user ? 'YES' : 'NO');
     if (!user) {
       const error = new Error('Invalid credentials');
       error.type = 'UNAUTHORIZED';
