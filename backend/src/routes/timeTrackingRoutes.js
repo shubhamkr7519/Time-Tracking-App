@@ -1,20 +1,24 @@
-// src/routes/timeTrackingRoutes.js
-const router = require('express').Router();
+// backend/src/routes/timeTrackingRoutes.js
+const express = require('express');
+const router = express.Router();
 const timeTrackingController = require('../controllers/timeTrackingController');
 
-// GET /api/v1/analytics/project-time - Get project time analytics
-router.get('/project-time', timeTrackingController.getProjectTime);
+// Start time tracking
+router.post('/start', timeTrackingController.startTracking);
 
-// GET /api/v1/analytics/time-tracking - Get detailed time tracking data
-router.get('/time-tracking', timeTrackingController.getTimeTrackingData);
+// Stop time tracking
+router.post('/stop', timeTrackingController.stopTracking);
 
-// POST /api/v1/time-tracking/start - Start time tracking
-router.post('/start', timeTrackingController.startTimeTracking);
-
-// POST /api/v1/time-tracking/stop - Stop time tracking
-router.post('/stop', timeTrackingController.stopTimeTracking);
-
-// GET /api/v1/time-tracking/active - Get active session
+// Get current active session
 router.get('/active', timeTrackingController.getActiveSession);
+
+// Get time sessions (with pagination and filters)
+router.get('/sessions', timeTrackingController.getSessions);
+
+// Sync data from desktop app
+router.post('/sync', timeTrackingController.syncData);
+
+// Get time tracking statistics
+router.get('/stats', timeTrackingController.getStats);
 
 module.exports = router;
